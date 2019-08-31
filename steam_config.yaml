@@ -1,0 +1,2 @@
+timeout: 1
+retry-timeout: 0.75
