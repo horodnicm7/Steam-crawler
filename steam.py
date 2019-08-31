@@ -120,7 +120,7 @@ class Bot(object, metaclass=Singleton):
         return round(100 - (100 * new_price) / old_price, 2)
 
 
-def scrap_deals(debug=False, timeout=0.75, retry_timeout=0.75):
+def scrap_deals(debug=False, timeout=0.75, retry_timeout=0.75, max_page_number=100):
     url = 'https://store.steampowered.com/'
     bot = Bot(url, timeout=retry_timeout)
     agent = bot.get_valid_user_agent()
@@ -128,6 +128,9 @@ def scrap_deals(debug=False, timeout=0.75, retry_timeout=0.75):
     base_page = 'https://store.steampowered.com/search/?specials=1&page='
     page_no = 1
     while True:
+        if page_no > max_page_number:
+            break
+
         equal_pos = base_page.rfind('=')
         base_page = base_page[:equal_pos + 1] + str(page_no)
 
@@ -184,11 +187,16 @@ def main():
 
     timeout = 0.75
     retry_timeout = 0.75
+    max_page_number = 100
     if config:
-        timeout = config['timeout']
-        retry_timeout = config['retry-timeout']
+        try:
+            timeout = config['timeout']
+            retry_timeout = config['retry-timeout']
+            max_page_number = config['max-page-number']
+        except KeyError:
+            print('[DEBUG] Key not found in config')
 
-    scrap_deals(debug=True, timeout=timeout, retry_timeout=retry_timeout)
+    scrap_deals(debug=True, timeout=timeout, retry_timeout=retry_timeout, max_page_number=max_page_number)
 
 
 main()
